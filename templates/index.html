@@ -10,7 +10,6 @@
   <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap" rel="stylesheet"/>
   <link rel="stylesheet" href="{{ url_for('static', filename='css/style.css') }}"/>
   <link rel="stylesheet" href="{{ url_for('static', filename='css/extensions.css') }}"/>
-
 </head>
 <body>
 
@@ -217,6 +216,18 @@
               <button class="btn-green" onclick="goPlanner()">Generate My Full Trip →</button>
             </div>
           </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- WORLD MAP SECTION -->
+    <section class="map-section" id="world-map-section">
+      <div class="section-inner" style="max-width: 1200px; margin: 0 auto; text-align: center;">
+        <div class="section-badge">🌍 Explore the World</div>
+        <h2 class="section-title">Popular <span class="accent">Destinations</span></h2>
+        <p class="section-sub">Click on a destination to plan your trip.</p>
+        <div class="world-map-wrapper">
+          <div id="world-map" class="ts-world-map"></div>
         </div>
       </div>
     </section>
@@ -510,6 +521,17 @@
             <div class="itinerary-tips hidden" id="itinerary-tips"></div>
           </div>
 
+          <!-- 5.1 Travel Map -->
+          <div class="result-card hidden" id="trip-map-card">
+            <div class="card-head">
+              <span class="card-title">🗺️ Trip Route & Map</span>
+              <span class="card-subtitle" id="trip-map-location">Visualise your journey</span>
+            </div>
+            <div class="map-body" style="padding:0;">
+              <div id="trip-map" class="ts-trip-map"></div>
+            </div>
+          </div>
+
           <!-- 6. Hotels -->
           <div class="result-card hidden" id="hotels-card">
             <div class="card-head">
@@ -688,5 +710,7 @@
     </button>
   </div>
 
+  <!-- Google Maps SDK -->
+  <script async defer src="https://maps.googleapis.com/maps/api/js?key={{ google_maps_api_key }}&libraries=places&callback=initMapFeatures"></script>
 </body>
 </html>

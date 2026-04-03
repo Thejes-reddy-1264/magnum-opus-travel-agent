@@ -876,3 +876,283 @@ window.initiateHotelBooking = function(hotelName, city, days, pricePerNightInr, 
     }
   };
 })();
+
+// ── GOOGLE MAPS INTEGRATION ───────────────────────────────────────────────────
+(function() {
+  let worldMap;
+  let tripMap;
+  let tripMarkers = [];
+  let geocoder;
+
+  const MAP_STYLE = [
+    { elementType: "geometry", stylers: [{ color: "#eef3f6" }] },
+    { elementType: "labels.icon", stylers: [{ visibility: "off" }] },
+    { elementType: "labels.text.fill", stylers: [{ color: "#8b9cb0" }] },
+    { elementType: "labels.text.stroke", stylers: [{ color: "#ffffff" }] },
+    { featureType: "administrative", elementType: "geometry", stylers: [{ color: "#cbd5e1" }] },
+    { featureType: "administrative.country", elementType: "geometry.stroke", stylers: [{ color: "#ffffff" }, { weight: 1.5 }] },
+    { featureType: "landscape", elementType: "geometry.fill", stylers: [{ color: "#ffffff" }] },
+    { featureType: "water", elementType: "geometry.fill", stylers: [{ color: "#e0f0fb" }] }
+  ];
+
+  const POPULAR_DESTINATIONS = [
+    { lat: 35.6762, lng: 139.6503, icon: "🗼", name: "Tokyo", color: "139, 92, 246" },
+    { lat: 48.8566, lng: 2.3522,   icon: "🗺️", name: "Paris", color: "249, 115, 22" },
+    { lat: -8.4095, lng: 115.1889, icon: "🌴", name: "Bali",  color: "34, 197, 94" },
+    { lat: 40.7128, lng: -74.0060, icon: "🗽", name: "New York", color: "234, 179, 8" },
+    { lat: 15.2993, lng: 74.1240,  icon: "🌊", name: "Goa",   color: "6, 182, 212" },
+    { lat: 41.9028, lng: 12.4964,  icon: "🏛", name: "Rome",  color: "239, 68, 68" },
+    { lat: -33.8688, lng: 151.2093,icon: "🦘", name: "Sydney",color: "59, 130, 246" },
+    { lat: 25.2048, lng: 55.2708,  icon: "🏢", name: "Dubai", color: "217, 119, 6" }
+  ];
+
+  /* Basic overlay class for DOM elements */
+  function CustomMarker(latlng, map, icon, colorHex, title) {
+    this.latlng_ = latlng;
+    this.icon_ = icon;
+    this.color_ = colorHex;
+    this.title_ = title;
+    this.div_ = null;
+    this.setMap(map);
+  }
+
+  function initMapFeatures() {
+    if (typeof google === "undefined" || !google.maps) {
+      setTimeout(initMapFeatures, 500);
+      return;
+    }
+
+    CustomMarker.prototype = new google.maps.OverlayView();
+
+    CustomMarker.prototype.onAdd = function() {
+      var div = document.createElement("div");
+      div.className = "custom-map-marker";
+      div.style.setProperty("--marker-color", this.color_);
+      div.innerHTML = this.icon_;
+      div.title = this.title_;
+
+      div.addEventListener("click", () => {
+        if(typeof window.goPlanner === "function") window.goPlanner(this.title_);
+      });
+
+      this.div_ = div;
+      var panes = this.getPanes();
+      panes.overlayMouseTarget.appendChild(div);
+    };
+
+    CustomMarker.prototype.draw = function() {
+      var overlayProjection = this.getProjection();
+      var position = overlayProjection.fromLatLngToDivPixel(this.latlng_);
+      var div = this.div_;
+      if (div && position) {
+        div.style.left = position.x + "px";
+        div.style.top = position.y + "px";
+      }
+    };
+
+    CustomMarker.prototype.onRemove = function() {
+      if (this.div_) {
+        this.div_.parentNode.removeChild(this.div_);
+        this.div_ = null;
+      }
+    };
+
+    geocoder = new google.maps.Geocoder();
+
+    // 1. Initialize World Map
+    const worldMapEl = document.getElementById("world-map");
+    if (worldMapEl) {
+      try {
+        worldMap = new google.maps.Map(worldMapEl, {
+          center: { lat: 20, lng: 0 },
+          zoom: 2,
+          disableDefaultUI: true,
+          styles: MAP_STYLE
+        });
+
+        worldMap.addListener('tilesloaded', function() {
+           document.activeElement.blur(); // Remove focus that shifts page down
+        });
+
+        POPULAR_DESTINATIONS.forEach(dest => {
+          new CustomMarker(
+            new google.maps.LatLng(dest.lat, dest.lng),
+            worldMap,
+            dest.icon,
+            dest.color,
+            dest.name
+          );
+        });
+      } catch(err) {
+        console.error("World Map init failed:", err);
+      }
+    }
+
+    // Hook into renderItinerary to generate Trip Map
+    if (typeof window.renderItinerary === "function") {
+      const originalRenderItinerary = window.renderItinerary;
+      window.renderItinerary = function(itineraryData) {
+        originalRenderItinerary(itineraryData);
+        if (itineraryData && itineraryData.days && itineraryData.days.length > 0) {
+          generateTripMap(itineraryData.days);
+        }
+      };
+    }
+  }
+
+  async function generateTripMap(itineraryDays) {
+    const mapCard = document.getElementById("trip-map-card");
+    const mapEl = document.getElementById("trip-map");
+    if (!mapCard || !mapEl || !geocoder) return;
+
+    mapCard.classList.remove("hidden");
+    
+    // Extract base city from topbar if possible, to aid geocoding
+    const cityLabel = document.getElementById("results-city-label");
+    let baseCity = "Unknown City";
+    if (cityLabel) {
+       const bTag = cityLabel.querySelector("strong");
+       if (bTag) baseCity = bTag.textContent;
+    }
+
+    document.getElementById("trip-map-location").textContent = "Visualise your journey in " + baseCity;
+
+    try {
+      if (!tripMap) {
+        tripMap = new google.maps.Map(mapEl, {
+          zoom: 12,
+          disableDefaultUI: false,
+          styles: MAP_STYLE,
+          mapTypeControl: false,
+          streetViewControl: false
+        });
+      }
+    } catch(err) {
+      console.error("Trip Map init failed:", err);
+      return;
+    }
+
+    // Clear old markers
+    tripMarkers.forEach(m => m.setMap(null));
+    tripMarkers = [];
+    const bounds = new google.maps.LatLngBounds();
+
+    let allPlaces = [];
+    itineraryDays.forEach(day => {
+       if (day.morning) allPlaces.push({ name: day.morning.name, label: "M", color: "#22c55e" });
+       if (day.afternoon) allPlaces.push({ name: day.afternoon.name, label: "A", color: "#f59e0b" });
+       if (day.evening) allPlaces.push({ name: day.evening.name, label: "E", color: "#6366f1" });
+    });
+
+    if (allPlaces.length === 0) return;
+
+    // Use geocode cautiously to not hit rate limits easily
+    for (let i = 0; i < allPlaces.length; i++) {
+       const place = allPlaces[i];
+       const query = place.name + ", " + baseCity;
+       
+       geocoder.geocode({ 'address': query }, function(results, status) {
+         if (status === 'OK' && results[0]) {
+           const latlng = results[0].geometry.location;
+           const marker = new google.maps.Marker({
+              map: tripMap,
+              position: latlng,
+              title: place.name,
+              label: {
+                  text: place.label,
+                  color: "#ffffff",
+                  fontWeight: "bold"
+              },
+              icon: {
+                  path: google.maps.SymbolPath.CIRCLE,
+                  scale: 14,
+                  fillColor: place.color,
+                  fillOpacity: 1,
+                  strokeColor: '#ffffff',
+                  strokeWeight: 2,
+              }
+           });
+           
+           const infowindow = new google.maps.InfoWindow({ content: "<strong>" + place.name + "</strong>" });
+           marker.addListener("click", () => { infowindow.open(tripMap, marker); });
+           
+           tripMarkers.push(marker);
+           bounds.extend(latlng);
+           tripMap.fitBounds(bounds);
+         }
+       });
+       
+       // Sleep 250ms between requests to avoid over_query_limit
+       await new Promise(r => setTimeout(r, 250));
+    }
+  }
+
+  // --- FALLBACK LOGIC ---
+  window.gm_authFailure = function() {
+    console.warn("Google Maps Auth Failure! Activating fallback static map...");
+    setTimeout(activateFallbackMap, 100);
+  };
+
+  function activateFallbackMap() {
+    const worldMapEl = document.getElementById("world-map");
+    if (!worldMapEl) return;
+    const wrapper = worldMapEl.closest('.world-map-wrapper');
+    if (!wrapper) return;
+
+    // Hide broken map
+    worldMapEl.style.display = "none";
+
+    // Set fallback on wrapper
+    wrapper.style.position = "relative";
+    wrapper.style.background = "#eef3f6 url('/static/images/world_map_bg.png') no-repeat center center/cover";
+    
+    // Relative positioning for markers overlayed on the static image
+    const fallbackPositions = {
+      "Tokyo": { left: "86%", top: "37%" },
+      "Paris": { left: "49%", top: "28%" },
+      "Bali": { left: "79%", top: "60%" },
+      "New York": { left: "28%", top: "35%" },
+      "Goa": { left: "68%", top: "48%" },
+      "Rome": { left: "52%", top: "32%" },
+      "Sydney": { left: "89%", top: "75%" },
+      "Dubai": { left: "63%", top: "42%" }
+    };
+
+    POPULAR_DESTINATIONS.forEach(dest => {
+      const pos = fallbackPositions[dest.name];
+      if(!pos) return;
+
+      const markerDiv = document.createElement("div");
+      markerDiv.className = "custom-map-marker marker-active";
+      markerDiv.style.position = "absolute";
+      markerDiv.style.left = pos.left;
+      markerDiv.style.top = pos.top;
+      markerDiv.style.setProperty("--marker-color", dest.color);
+      markerDiv.innerHTML = dest.icon;
+      markerDiv.title = dest.name;
+      
+      markerDiv.addEventListener("click", () => {
+        if(typeof window.goPlanner === "function") window.goPlanner(dest.name);
+      });
+
+      wrapper.appendChild(markerDiv);
+    });
+
+    // Handle trip map fallback as well
+    const tripMapCard = document.getElementById("trip-map-card");
+    if (tripMapCard) {
+      tripMapCard.classList.add("hidden"); 
+    }
+  }
+
+  // Expose to global scope for JSONP callback from Google Maps script
+  window.initMapFeatures = initMapFeatures;
+
+  // Init when document is ready
+  if (document.readyState === "loading") {
+    document.addEventListener("DOMContentLoaded", initMapFeatures);
+  } else {
+    initMapFeatures();
+  }
+
+})();

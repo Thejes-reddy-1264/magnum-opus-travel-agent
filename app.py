@@ -22,7 +22,8 @@ from config import (
     FLASK_DEBUG, FLASK_PORT, SECRET_KEY,
     DB_URI, JWT_SECRET_KEY, JWT_ACCESS_TOKEN_EXPIRES,
     CITY_MAX_LEN, VALID_BUDGETS, VALID_INTERESTS, MAX_INTERESTS,
-    MISTRAL_API_KEY, RAZORPAY_KEY_ID, RAZORPAY_KEY_SECRET
+    MISTRAL_API_KEY, RAZORPAY_KEY_ID, RAZORPAY_KEY_SECRET,
+    GOOGLE_MAPS_API_KEY
 )
 from database import db
 from extensions import bcrypt, jwt
@@ -94,7 +95,7 @@ def _log_request(response):
 # ── Pages ─────────────────────────────────────────────────────────────────────
 @app.route("/")
 def index():
-    return render_template("index.html")
+    return render_template("index.html", google_maps_api_key=GOOGLE_MAPS_API_KEY)
 
 
 # ═════════════════════════════════════════════════════════════════════════════

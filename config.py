@@ -51,7 +51,8 @@ SECRET_KEY  = os.getenv("SECRET_KEY", "change-me-in-production")
 
 # ── Database ────────────────────────────────────────────────────────────────────
 # SQLite by default — override with a MySQL/Postgres URL in production
-DB_URI = os.getenv("DATABASE_URL", "sqlite:///tripsense.db")
+_default_sqlite = "sqlite:////tmp/tripsense.db" if os.environ.get("VERCEL") else "sqlite:///tripsense.db"
+DB_URI = os.getenv("DATABASE_URL", _default_sqlite)
 
 # ── JWT ─────────────────────────────────────────────────────────────────────────
 JWT_SECRET_KEY           = os.getenv("JWT_SECRET_KEY", SECRET_KEY)
