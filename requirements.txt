@@ -1,0 +1,28 @@
+# TripSense AI Travel Recommender — Python Dependencies
+
+# Core web framework
+flask>=3.0.0
+
+# Environment variable management
+python-dotenv>=1.0.0
+
+# HTTP client (retries, timeouts)
+requests>=2.31.0
+
+# ── Authentication ────────────────────────────────────────
+# Password hashing
+bcrypt>=4.0.0
+flask-bcrypt>=1.0.1
+
+# JWT token generation & verification
+flask-jwt-extended>=4.6.0
+
+# SQLite ORM (built-in SQLite, no extra DB server needed)
+flask-sqlalchemy>=3.1.0
+
+# Input validation
+email-validator>=2.1.0
+
+# ── Production deployment ──────────────────────────────────
+# Uncomment when deploying to a server:
+# gunicorn>=21.0.0

@@ -1,0 +1,610 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8"/>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>TripSense — AI Travel Planner</title>
+  <meta name="description" content="AI-powered travel planner. Get personalised 3-day itineraries, real-time weather, and curated hotel picks."/>
+  <link rel="preconnect" href="https://fonts.googleapis.com"/>
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin/>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap" rel="stylesheet"/>
+  <link rel="stylesheet" href="{{ url_for('static', filename='css/style.css') }}"/>
+</head>
+<body>
+
+  <!-- NAV -->
+  <nav class="nav" id="main-nav">
+    <div class="nav-inner">
+      <a class="nav-logo" href="#" onclick="goLanding(event)">
+        <div class="nav-logo-leaf">🌿</div>
+        <div class="nav-logo-text">
+          <span class="nav-logo-name">TripSense</span>
+          <span class="nav-logo-sub">Smart Travel Assistant</span>
+        </div>
+      </a>
+      <div class="nav-links">
+        <a href="#features" class="nav-link">🌍 Destinations</a>
+        <a href="#preview" class="nav-link">📅 Itinerary</a>
+
+        <!-- Guest buttons -->
+        <div id="nav-guest">
+          <button class="nav-ghost-btn" onclick="openAuthModal('login')">Log In</button>
+          <button class="nav-plan-btn" onclick="openAuthModal('register')">Sign Up Free</button>
+        </div>
+
+        <!-- Logged-in user -->
+        <div id="nav-user" class="hidden nav-user-wrap">
+          <span class="nav-avatar">✈</span>
+          <span id="nav-username" class="nav-username"></span>
+          <button class="nav-ghost-btn" onclick="handleLogout()">Log Out</button>
+        </div>
+      </div>
+    </div>
+  </nav>
+
+  <!-- ══════════════════════════════════
+       LANDING PAGE
+  ══════════════════════════════════ -->
+  <div id="landing-page">
+
+    <!-- Hero -->
+    <section class="hero">
+      <div class="hero-badge">🌿 AI-Powered Travel Planning</div>
+      <h1 class="hero-title">Plan Your Perfect Trip with <span class="accent">AI</span></h1>
+      <p class="hero-sub">Enter a destination and get a personalised 3-day itinerary, live weather insights, and curated hotel suggestions — in seconds.</p>
+
+      <div class="hero-search-wrap">
+        <input type="text" id="hero-city" placeholder="Where do you want to go?  e.g. Goa, Tokyo, Paris…" autocomplete="off"/>
+        <button class="hero-search-btn" onclick="goPlanner(document.getElementById('hero-city').value)">Plan My Trip →</button>
+      </div>
+
+      <div class="dest-chips">
+        <button class="dest-chip" onclick="goPlanner('Tokyo')"><span class="dest-chip-icon">🗼</span>Tokyo</button>
+        <button class="dest-chip" onclick="goPlanner('Paris')"><span class="dest-chip-icon">🗺</span>Paris</button>
+        <button class="dest-chip" onclick="goPlanner('Bali')"><span class="dest-chip-icon">🌴</span>Bali</button>
+        <button class="dest-chip" onclick="goPlanner('Santorini')"><span class="dest-chip-icon">🏛</span>Santorini</button>
+        <button class="dest-chip" onclick="goPlanner('New York')"><span class="dest-chip-icon">🗽</span>New York</button>
+        <button class="dest-chip" onclick="goPlanner('Goa')"><span class="dest-chip-icon">🌊</span>Goa</button>
+        <button class="dest-chip" onclick="goPlanner('Kyoto')"><span class="dest-chip-icon">⛩</span>Kyoto</button>
+      </div>
+
+      <div class="hero-stats">
+        <div class="hstat">
+          <span class="hstat-num"><span>3</span>-Day</span>
+          <span class="hstat-lbl">AI Itineraries</span>
+        </div>
+        <div class="hstat">
+          <span class="hstat-num">Live</span>
+          <span class="hstat-lbl">Weather Data</span>
+        </div>
+        <div class="hstat">
+          <span class="hstat-num"><span>5</span>+</span>
+          <span class="hstat-lbl">Hotels Per City</span>
+        </div>
+        <div class="hstat">
+          <span class="hstat-num">Free</span>
+          <span class="hstat-lbl">No Sign-up Needed</span>
+        </div>
+      </div>
+    </section>
+
+    <!-- Features -->
+    <section class="features-section" id="features">
+      <div class="section-inner">
+        <div class="section-badge">🌟 What's included</div>
+        <h2 class="section-title">Everything for a <span class="accent">perfect trip</span></h2>
+        <p class="section-sub">From AI-generated day plans to real-time weather — we've got your travel covered.</p>
+        <div class="features-grid">
+          <div class="feat-card">
+            <span class="feat-emoji">🗓</span>
+            <h3 class="feat-title">3-Day AI Itinerary</h3>
+            <p class="feat-desc">Mistral AI generates Morning, Afternoon &amp; Evening activities personalised to your interests and travel style.</p>
+          </div>
+          <div class="feat-card">
+            <span class="feat-emoji">🌤</span>
+            <h3 class="feat-title">Live Weather Insights</h3>
+            <p class="feat-desc">Real-time weather shapes every recommendation. Rainy day? Expect curated indoor alternatives automatically.</p>
+          </div>
+          <div class="feat-card">
+            <span class="feat-emoji">🏨</span>
+            <h3 class="feat-title">Curated Hotel Picks</h3>
+            <p class="feat-desc">Hotels filtered by your budget — Budget, Mid-Range, or Luxury — ranked by rating and value for money.</p>
+          </div>
+          <div class="feat-card">
+            <span class="feat-emoji">🎯</span>
+            <h3 class="feat-title">Interest-Based Planning</h3>
+            <p class="feat-desc">Choose from Nature, Food, Culture, Adventure, Beach, Shopping, or Wellness. Your plan adapts instantly.</p>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- Sample itinerary preview -->
+    <section class="preview-section" id="preview">
+      <div class="section-inner">
+        <div class="section-badge">🌱 Preview</div>
+        <h2 class="section-title">Sample <span class="accent">Itinerary</span></h2>
+        <p class="section-sub">Here's what an AI-generated 3-day trip looks like — yours will be fully personalised.</p>
+        <div class="preview-wrap">
+          <!-- Day 1 -->
+          <div class="day-block">
+            <div class="day-heading">Day 1</div>
+            <div class="day-sub">Arrival &amp; Old Town Exploration</div>
+            <div class="timeline">
+              <div class="tl-item">
+                <div class="tl-dot"></div>
+                <div class="tl-icon">✈️</div>
+                <div class="tl-body">
+                  <div class="tl-top">
+                    <span class="tl-time">09:00</span>
+                    <span class="tl-cat cat-morning">Transport</span>
+                  </div>
+                  <div class="tl-name">Airport Arrival &amp; Hotel Check-in</div>
+                  <div class="tl-desc">Settle in and freshen up before starting your adventure.</div>
+                </div>
+              </div>
+              <div class="tl-item">
+                <div class="tl-dot"></div>
+                <div class="tl-icon">🚶</div>
+                <div class="tl-body">
+                  <div class="tl-top">
+                    <span class="tl-time">11:00</span>
+                    <span class="tl-cat cat-morning">Activity</span>
+                  </div>
+                  <div class="tl-name">Walking Tour of Historic District</div>
+                  <div class="tl-desc">Explore cobbled streets, local architecture, and hidden gems.</div>
+                </div>
+              </div>
+              <div class="tl-item">
+                <div class="tl-dot"></div>
+                <div class="tl-icon">🍜</div>
+                <div class="tl-body">
+                  <div class="tl-top">
+                    <span class="tl-time">13:00</span>
+                    <span class="tl-cat cat-food">Food</span>
+                  </div>
+                  <div class="tl-name">Local Street Food Market Lunch</div>
+                  <div class="tl-desc">Taste authentic local cuisine at the famous street market.</div>
+                </div>
+              </div>
+              <div class="tl-item">
+                <div class="tl-dot"></div>
+                <div class="tl-icon">🗿</div>
+                <div class="tl-body">
+                  <div class="tl-top">
+                    <span class="tl-time">15:00</span>
+                    <span class="tl-cat cat-culture">Attraction</span>
+                  </div>
+                  <div class="tl-name">Ancient Temple &amp; Gardens Visit</div>
+                  <div class="tl-desc">Witness centuries of history at this iconic landmark.</div>
+                </div>
+              </div>
+              <div class="tl-item">
+                <div class="tl-dot"></div>
+                <div class="tl-icon">🌅</div>
+                <div class="tl-body">
+                  <div class="tl-top">
+                    <span class="tl-time">19:00</span>
+                    <span class="tl-cat cat-evening">Food</span>
+                  </div>
+                  <div class="tl-name">Sunset Rooftop Dinner</div>
+                  <div class="tl-desc">End the day with panoramic views and a memorable meal.</div>
+                </div>
+              </div>
+            </div>
+          </div>
+          <!-- Day 2 teaser -->
+          <div class="day-block">
+            <div class="day-heading">Day 2</div>
+            <div class="day-sub">Adventure &amp; Nature Day</div>
+            <div class="timeline">
+              <div class="tl-item">
+                <div class="tl-dot"></div>
+                <div class="tl-icon">⛰</div>
+                <div class="tl-body">
+                  <div class="tl-top">
+                    <span class="tl-time">07:00</span>
+                    <span class="tl-cat cat-adventure">Adventure</span>
+                  </div>
+                  <div class="tl-name">Sunrise Mountain Hike</div>
+                  <div class="tl-desc">A breathtaking sunrise hike with panoramic views of the valley.</div>
+                </div>
+              </div>
+            </div>
+            <div style="text-align:center; margin-top:16px;">
+              <button class="btn-green" onclick="goPlanner()">Generate My Full Trip →</button>
+            </div>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- CTA -->
+    <section class="cta-section">
+      <div class="section-badge" style="margin:0 auto 20px;">🚀 Get Started</div>
+      <h2 class="section-title">Ready to plan your <span class="accent">next adventure?</span></h2>
+      <p class="section-sub" style="margin:0 auto 32px;">Takes under 30 seconds. No account required.</p>
+      <div style="display:flex;gap:14px;justify-content:center;flex-wrap:wrap;">
+        <button class="btn-green lg" onclick="goPlanner()">Start Planning for Free →</button>
+        <a href="#preview" class="btn-outline">See a sample itinerary</a>
+      </div>
+    </section>
+
+    <footer class="footer">
+      <div class="footer-inner">
+        <div class="footer-logo">🌿 TripSense</div>
+        <span class="footer-sep">·</span>
+        <span>Powered by OpenWeather, Booking.com &amp; Mistral AI</span>
+        <span class="footer-sep">·</span>
+        <span>Built with ❤️</span>
+      </div>
+    </footer>
+
+  </div><!-- /landing-page -->
+
+
+  <!-- ══════════════════════════════════
+       PLANNER PAGE
+  ══════════════════════════════════ -->
+  <div id="planner-page" class="hidden">
+
+    <div class="planner-header">
+      <div class="planner-header-inner">
+        <button class="back-btn" onclick="goLanding()">← Back</button>
+        <span class="planner-header-title">🌿 Trip Planner</span>
+      </div>
+    </div>
+
+    <div class="planner-layout">
+
+      <!-- Sidebar -->
+      <aside class="search-sidebar" id="search-sidebar">
+        <div class="sidebar-title">🗺 Plan a New Trip</div>
+
+        <div class="form-group">
+          <label class="form-label" for="city-input">Destination</label>
+          <div class="city-field">
+            <span class="city-icon">📍</span>
+            <input class="city-input" id="city-input" type="text"
+              placeholder="City or region…" autocomplete="off" maxlength="80"/>
+            <button class="city-clear hidden" id="city-clear" onclick="clearCity()" aria-label="Clear">✕</button>
+          </div>
+        </div>
+
+        <div class="form-group">
+          <label class="form-label">Budget</label>
+          <div class="budget-pills">
+            <button class="budget-pill" data-value="budget" onclick="selectBudget(this)">
+              <span class="bp-icon">◇</span>
+              <span class="bp-name">Budget</span>
+              <span class="bp-range">≤ $80/night</span>
+            </button>
+            <button class="budget-pill active" data-value="mid-range" onclick="selectBudget(this)">
+              <span class="bp-icon">◈</span>
+              <span class="bp-name">Mid-Range</span>
+              <span class="bp-range">$80–$200</span>
+            </button>
+            <button class="budget-pill" data-value="high" onclick="selectBudget(this)">
+              <span class="bp-icon">◆</span>
+              <span class="bp-name">Luxury</span>
+              <span class="bp-range">$200+</span>
+            </button>
+          </div>
+        </div>
+
+        <div class="form-group">
+          <label class="form-label">Interests <span class="hint">(optional)</span></label>
+          <div class="interest-chips">
+            <button class="interest-chip" data-value="nature"    aria-pressed="false">🌿 Nature</button>
+            <button class="interest-chip" data-value="adventure" aria-pressed="false">⛰ Adventure</button>
+            <button class="interest-chip" data-value="food"      aria-pressed="false">🍜 Food</button>
+            <button class="interest-chip" data-value="culture"   aria-pressed="false">🏛 Culture</button>
+            <button class="interest-chip" data-value="beach"     aria-pressed="false">🏖 Beach</button>
+            <button class="interest-chip" data-value="shopping"  aria-pressed="false">🛍 Shopping</button>
+            <button class="interest-chip" data-value="wellness"  aria-pressed="false">🧘 Wellness</button>
+          </div>
+        </div>
+
+        <!-- Trip customisation -->
+        <div class="form-row-2">
+          <div class="form-group">
+            <label class="form-label">📅 Number of Days</label>
+            <div class="counter-wrap">
+              <button class="ctr-btn" id="days-dec" onclick="adjustCounter('days', -1)" aria-label="Decrease days">−</button>
+              <span class="ctr-val" id="days-val">3</span>
+              <button class="ctr-btn" id="days-inc" onclick="adjustCounter('days', +1)" aria-label="Increase days">+</button>
+            </div>
+            <div class="ctr-hint">1 – 10 days</div>
+          </div>
+          <div class="form-group">
+            <label class="form-label">👤 Number of Persons</label>
+            <div class="counter-wrap">
+              <button class="ctr-btn" id="persons-dec" onclick="adjustCounter('persons', -1)" aria-label="Decrease persons">−</button>
+              <span class="ctr-val" id="persons-val">1</span>
+              <button class="ctr-btn" id="persons-inc" onclick="adjustCounter('persons', +1)" aria-label="Increase persons">+</button>
+            </div>
+            <div class="ctr-hint">1 – 50 persons</div>
+          </div>
+        </div>
+
+        <button class="submit-btn" id="search-btn" onclick="handleSearch()">
+          <span id="btn-text">Get Recommendations</span>
+          <span class="hidden" id="btn-loader">
+            <span class="dot-loader"><span></span><span></span><span></span></span>
+          </span>
+        </button>
+
+        <div class="error-box hidden" id="error-banner" role="alert">
+          <span>⚠</span>
+          <span id="error-message"></span>
+        </div>
+      </aside>
+
+      <!-- Results -->
+      <section class="results-area" id="results-section" aria-live="polite">
+
+        <!-- Loading overlay -->
+        <div class="loading-overlay hidden" id="loading-overlay">
+          <div class="loading-inner">
+            <div class="loading-spinner"></div>
+            <div class="loading-text" id="loading-step">Fetching weather data…</div>
+            <div class="loading-track">
+              <div class="loading-fill" id="loading-bar" style="width:0%"></div>
+            </div>
+            <div class="loading-steps">
+              <span class="lstep" id="lstep-weather">Weather</span>
+              <span class="lstep-sep">→</span>
+              <span class="lstep" id="lstep-plan">Plan</span>
+              <span class="lstep-sep">→</span>
+              <span class="lstep" id="lstep-hotels">Hotels</span>
+            </div>
+          </div>
+        </div>
+
+        <!-- Empty state -->
+        <div class="results-empty" id="results-empty">
+          <div class="empty-icon">✈️</div>
+          <h3 class="empty-title">Your trip plan will appear here</h3>
+          <p class="empty-sub">Enter a destination and click <em>Get Recommendations</em> to start.</p>
+        </div>
+
+        <!-- Results content -->
+        <div class="results-stack hidden" id="results-content">
+
+          <!-- Topbar -->
+          <div class="results-topbar hidden" id="results-topbar">
+            <span class="topbar-dest" id="results-city-label">📍 —</span>
+            <button class="btn-sm-outline" onclick="clearResults()">↑ New Search</button>
+          </div>
+
+          <!-- 1. Weather -->
+          <div class="result-card" id="weather-card">
+            <div class="card-head">
+              <span class="card-title">🌤 Current Weather</span>
+              <span class="card-subtitle" id="weather-location"></span>
+            </div>
+            <div class="weather-body">
+              <div class="weather-left">
+                <img id="weather-icon" src="" alt="" class="weather-icon-img"/>
+                <div>
+                  <div class="weather-temp" id="weather-temp"></div>
+                  <div class="weather-desc" id="weather-desc"></div>
+                </div>
+              </div>
+              <div class="weather-stats">
+                <div class="wstat">
+                  <span class="wstat-label">Feels Like</span>
+                  <span class="wstat-value" id="feels-like"></span>
+                </div>
+                <div class="wstat">
+                  <span class="wstat-label">Humidity</span>
+                  <span class="wstat-value" id="humidity"></span>
+                </div>
+                <div class="wstat">
+                  <span class="wstat-label">Wind</span>
+                  <span class="wstat-value" id="wind-speed"></span>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <!-- 2. Conditions insight -->
+          <div class="result-card hidden" id="wrec-card">
+            <div class="card-head">
+              <span class="card-title">🌡 Conditions Insight</span>
+            </div>
+            <div class="wrec-body">
+              <div class="wrec-emoji" id="wrec-icon"></div>
+              <div>
+                <div class="wrec-tag" id="wrec-mood"></div>
+                <div class="wrec-headline" id="wrec-headline"></div>
+                <p class="wrec-blurb" id="wrec-blurb"></p>
+                <div class="wrec-chips" id="wrec-activities"></div>
+              </div>
+            </div>
+          </div>
+
+          <!-- 3. Tips -->
+          <div class="result-card hidden" id="tips-card">
+            <div class="card-head">
+              <span class="card-title">💡 Travel Tips</span>
+            </div>
+            <div class="tips-cols">
+              <div>
+                <p class="tips-group-lbl">Weather Tips</p>
+                <ul class="tips-list" id="weather-tips"></ul>
+              </div>
+              <div>
+                <p class="tips-group-lbl">Based on Your Interests</p>
+                <ul class="tips-list" id="interest-tips"></ul>
+              </div>
+            </div>
+            <div class="hidden" id="budget-tip-wrap" style="margin-top:16px;">
+              <p class="tips-group-lbl">Budget Advice</p>
+              <p class="budget-tip-p" id="budget-tip"></p>
+            </div>
+          </div>
+
+          <!-- 4. Cost & Group Summary -->
+          <div class="result-card hidden" id="cost-card">
+            <div class="card-head">
+              <span class="card-title">💰 Cost Estimate</span>
+              <span class="card-subtitle" id="cost-subtitle"></span>
+            </div>
+            <div class="cost-body">
+              <div class="cost-total-wrap">
+                <div class="cost-total-val" id="cost-total"></div>
+                <div class="cost-total-lbl">Total Estimated Cost</div>
+              </div>
+              <div class="cost-breakdown" id="cost-breakdown"></div>
+            </div>
+            <div class="group-banner" id="group-banner"></div>
+            <div class="group-acts-wrap hidden" id="group-acts-wrap">
+              <div class="group-acts-lbl">🌟 Recommended for your group</div>
+              <ul class="group-acts-list" id="group-acts-list"></ul>
+            </div>
+          </div>
+
+          <!-- 5. Travel Plan -->
+          <div class="result-card hidden" id="plan-card">
+            <div class="card-head">
+              <span class="card-title">🧭 Your Travel Plan</span>
+              <span class="card-subtitle" id="plan-subtitle"></span>
+            </div>
+            <p class="plan-summary-p" id="plan-summary"></p>
+            <p class="plan-sec-lbl">Recommended Activities</p>
+            <div class="plan-acts" id="plan-activities"></div>
+            <div class="hidden" id="plan-hotel-pick">
+              <p class="plan-sec-lbl">Best Hotel Match</p>
+              <div id="plan-hotel-box"></div>
+            </div>
+            <p class="plan-sec-lbl">Travel Tips</p>
+            <ul class="plan-tips-list" id="plan-tips"></ul>
+            <button class="reasoning-btn" id="reasoning-toggle" onclick="toggleReasoning()">Show how this plan was built</button>
+            <div class="plan-reasoning-text hidden" id="plan-reasoning"></div>
+          </div>
+
+          <!-- 5. Itinerary -->
+          <div class="result-card hidden" id="itinerary-card">
+            <div class="card-head">
+              <span class="card-title">📅 Day-by-Day Itinerary</span>
+              <span class="card-subtitle" id="itinerary-subtitle"></span>
+            </div>
+            <div id="itinerary-days"></div>
+            <div class="itinerary-tips hidden" id="itinerary-tips"></div>
+          </div>
+
+          <!-- 6. Hotels -->
+          <div class="result-card hidden" id="hotels-card">
+            <div class="card-head">
+              <span class="card-title">🏨 Top Hotels</span>
+              <span class="card-subtitle" id="hotels-subtitle"></span>
+            </div>
+            <div class="hotels-msg hidden" id="hotels-message"></div>
+            <div class="hotels-grid" id="hotels-grid"></div>
+          </div>
+
+        </div><!-- /results-stack -->
+      </section>
+
+    </div><!-- /planner-layout -->
+
+    <footer class="footer">
+      <div class="footer-inner">
+        <div class="footer-logo">🌿 TripSense</div>
+        <span class="footer-sep">·</span>
+        <span>Powered by OpenWeather, Booking.com &amp; Mistral AI</span>
+      </div>
+    </footer>
+
+  </div><!-- /planner-page -->
+
+  <script src="{{ url_for('static', filename='js/app.js') }}"></script>
+
+  <!-- ══════════════════════════════════
+       AUTH MODAL
+  ══════════════════════════════════ -->
+  <div id="auth-modal" class="auth-modal-backdrop hidden" role="dialog" aria-modal="true" aria-label="Authentication">
+    <div class="auth-modal">
+
+      <!-- Header -->
+      <div class="auth-modal-header">
+        <div class="auth-modal-logo">🌿 TripSense</div>
+        <button class="auth-modal-close" onclick="closeAuthModal()" aria-label="Close">✕</button>
+      </div>
+
+      <!-- Tabs -->
+      <div class="auth-tabs">
+        <button class="auth-tab active" id="tab-login"    onclick="switchAuthTab('login')">Log In</button>
+        <button class="auth-tab"        id="tab-register" onclick="switchAuthTab('register')">Sign Up</button>
+      </div>
+
+      <!-- Login Form -->
+      <form class="auth-form" id="form-login" onsubmit="handleLogin(event)">
+        <p class="auth-form-sub">Welcome back! Log in to access your travel plans.</p>
+
+        <div class="auth-field">
+          <label class="auth-label" for="login-email">Email</label>
+          <input class="auth-input field-err" id="login-email" type="email"
+            placeholder="you@email.com" required autocomplete="email"/>
+        </div>
+
+        <div class="auth-field">
+          <label class="auth-label" for="login-password">Password</label>
+          <input class="auth-input field-err" id="login-password" type="password"
+            placeholder="Your password" required autocomplete="current-password"/>
+        </div>
+
+        <div class="auth-error hidden" id="login-error" role="alert"></div>
+
+        <button class="auth-submit" id="login-btn" type="submit">Log In</button>
+
+        <p class="auth-switch">Don't have an account?
+          <button type="button" class="auth-switch-link" onclick="switchAuthTab('register')">Sign up free</button>
+        </p>
+      </form>
+
+      <!-- Register Form -->
+      <form class="auth-form hidden" id="form-register" onsubmit="handleRegister(event)">
+        <p class="auth-form-sub">Create your free account to save trips and preferences.</p>
+
+        <div class="auth-field">
+          <label class="auth-label" for="reg-username">Username</label>
+          <input class="auth-input field-err" id="reg-username" type="text"
+            placeholder="Your name" required autocomplete="username"
+            minlength="2" maxlength="50"/>
+        </div>
+
+        <div class="auth-field">
+          <label class="auth-label" for="reg-email">Email</label>
+          <input class="auth-input field-err" id="reg-email" type="email"
+            placeholder="you@email.com" required autocomplete="email"/>
+        </div>
+
+        <div class="auth-field">
+          <label class="auth-label" for="reg-password">Password
+            <span class="auth-hint">(min. 6 characters)</span></label>
+          <input class="auth-input field-err" id="reg-password" type="password"
+            placeholder="Create a password" required minlength="6" autocomplete="new-password"/>
+        </div>
+
+        <div class="auth-field">
+          <label class="auth-label" for="reg-confirm">Confirm Password</label>
+          <input class="auth-input field-err" id="reg-confirm" type="password"
+            placeholder="Repeat password" required autocomplete="new-password"/>
+        </div>
+
+        <div class="auth-error hidden" id="reg-error" role="alert"></div>
+
+        <button class="auth-submit" id="reg-btn" type="submit">Create Account</button>
+
+        <p class="auth-switch">Already have an account?
+          <button type="button" class="auth-switch-link" onclick="switchAuthTab('login')">Log in</button>
+        </p>
+      </form>
+
+    </div>
+  </div><!-- /auth-modal -->
+
+</body>
+</html>

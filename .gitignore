@@ -1,0 +1,50 @@
+
+# InsForge & AI agent skills
+.insforge
+.agent
+.agents
+.augment
+.claude
+.cline
+.github/copilot*
+.kilocode
+.qoder
+.qwen
+.roo
+.trae
+.windsurf
+
+# ── Environment & secrets (NEVER commit these) ──
+.env
+*.env
+.env.local
+.env.production
+
+# ── Python ──
+__pycache__/
+*.py[cod]
+*.pyo
+*.pyd
+*.egg-info/
+dist/
+build/
+*.egg
+
+# ── Virtual environments ──
+venv/
+.venv/
+env/
+.env/
+
+# ── Database files ──
+*.db
+*.sqlite
+*.sqlite3
+instance/
+
+# ── Flask / general ──
+*.log
+.DS_Store
+Thumbs.db
+*.swp
+*.swo
