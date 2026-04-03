@@ -1046,7 +1046,22 @@ window.initiateHotelBooking = function(hotelName, city, days, pricePerNightInr, 
 
     if (allPlaces.length === 0) return;
 
-    // Use geocode cautiously to not hit rate limits easily
+    // Use geocode and Directions Service together
+    const directionsService = new google.maps.DirectionsService();
+    const directionsRenderer = window.tripDirectionsRenderer || new google.maps.DirectionsRenderer({
+      map: tripMap,
+      suppressMarkers: true,
+      polylineOptions: {
+        strokeColor: "#6366f1",
+        strokeOpacity: 0.8,
+        strokeWeight: 4
+      }
+    });
+    window.tripDirectionsRenderer = directionsRenderer;
+
+    const waypoints = [];
+    // Geocode and place custom markers
+    let processed = 0;
     for (let i = 0; i < allPlaces.length; i++) {
        const place = allPlaces[i];
        const query = place.name + ", " + baseCity;

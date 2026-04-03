@@ -66,6 +66,21 @@ function clearAuthErrors() {
   document.querySelectorAll(".field-err").forEach(e => e.classList.remove("field-error"));
 }
 
+function setAuthLoading(formId, isLoading) {
+  const btn = document.getElementById(`${formId}-btn`);
+  if (!btn) return;
+  if (isLoading) {
+    btn.disabled = true;
+    btn.dataset.originalText = btn.textContent;
+    btn.textContent = "Please wait...";
+  } else {
+    btn.disabled = false;
+    if (btn.dataset.originalText) {
+      btn.textContent = btn.dataset.originalText;
+    }
+  }
+}
+
 function setAuthError(formId, msg, field) {
   const errEl = document.getElementById(`${formId}-error`);
   if (errEl) { errEl.textContent = msg; errEl.classList.remove("hidden"); }
