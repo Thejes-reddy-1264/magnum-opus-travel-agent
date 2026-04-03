@@ -36,6 +36,14 @@ RAPIDAPI_BASE_URL = os.getenv("RAPIDAPI_BASE_URL", "https://booking-com.p.rapida
 # ── Mistral AI ──────────────────────────────────────────────────
 MISTRAL_API_KEY = os.getenv("MISTRAL_API_KEY", "")
 
+# ── Google Maps — Distance Matrix API ─────────────────────────────────────────
+GOOGLE_MAPS_API_KEY      = os.getenv("GOOGLE_MAPS_API_KEY", "")
+GOOGLE_DISTANCE_MATRIX_URL = "https://maps.googleapis.com/maps/api/distancematrix/json"
+
+# ── Razorpay — Payment Gateway ────────────────────────────────────────────────
+RAZORPAY_KEY_ID     = os.getenv("RAZORPAY_KEY_ID", "")
+RAZORPAY_KEY_SECRET = os.getenv("RAZORPAY_KEY_SECRET", "")
+
 # ── Flask settings ────────────────────────────────────────────────────────────
 FLASK_DEBUG = os.getenv("FLASK_DEBUG", "false").lower() == "true"
 FLASK_PORT  = int(os.getenv("FLASK_PORT", 5000))
@@ -70,6 +78,10 @@ if not OPENWEATHER_API_KEY:
     _warn_missing("OPENWEATHER_API_KEY", "Weather features will be unavailable.")
 if not RAPIDAPI_KEY:
     _warn_missing("RAPIDAPI_KEY", "Hotel search will fall back to curated mock data.")
+if not GOOGLE_MAPS_API_KEY:
+    _warn_missing("GOOGLE_MAPS_API_KEY", "Transport distances will use inline estimates.")
+if not RAZORPAY_KEY_ID or not RAZORPAY_KEY_SECRET:
+    _warn_missing("RAZORPAY_KEY_ID/SECRET", "Payments will be unavailable.")
 if SECRET_KEY == "change-me-in-production" and not FLASK_DEBUG:
     _warn_missing("SECRET_KEY", "Set a strong secret key before deploying to production.")
 if JWT_SECRET_KEY == "change-me-in-production" and not FLASK_DEBUG:

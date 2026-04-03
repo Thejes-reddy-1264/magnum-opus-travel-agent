@@ -9,6 +9,8 @@
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin/>
   <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap" rel="stylesheet"/>
   <link rel="stylesheet" href="{{ url_for('static', filename='css/style.css') }}"/>
+  <link rel="stylesheet" href="{{ url_for('static', filename='css/extensions.css') }}"/>
+
 </head>
 <body>
 
@@ -262,7 +264,16 @@
         <div class="sidebar-title">🗺 Plan a New Trip</div>
 
         <div class="form-group">
-          <label class="form-label" for="city-input">Destination</label>
+          <label class="form-label" for="source-input">📌 Starting From</label>
+          <div class="city-field">
+            <span class="city-icon">🏠</span>
+            <input class="city-input" id="source-input" type="text"
+              placeholder="Your starting city…" autocomplete="off" maxlength="80"/>
+          </div>
+        </div>
+
+        <div class="form-group">
+          <label class="form-label" for="city-input">📍 Destination</label>
           <div class="city-field">
             <span class="city-icon">📍</span>
             <input class="city-input" id="city-input" type="text"
@@ -270,6 +281,11 @@
             <button class="city-clear hidden" id="city-clear" onclick="clearCity()" aria-label="Clear">✕</button>
           </div>
         </div>
+
+        <div id="extra-destinations">
+          <!-- Extra destination slots injected by JS -->
+        </div>
+        <button class="add-stop-btn" id="add-stop-btn" onclick="addDestinationStop()" title="Add another stop">+ Add Stop</button>
 
         <div class="form-group">
           <label class="form-label">Budget</label>
@@ -504,6 +520,24 @@
             <div class="hotels-grid" id="hotels-grid"></div>
           </div>
 
+          <!-- 7. Transport Options -->
+          <div class="result-card hidden" id="transport-card">
+            <div class="card-head">
+              <span class="card-title">🚌 Transport Options</span>
+              <span class="card-subtitle" id="transport-subtitle"></span>
+            </div>
+            <div id="transport-legs-wrap"></div>
+          </div>
+
+          <!-- 8. Restaurants -->
+          <div class="result-card hidden" id="restaurants-card">
+            <div class="card-head">
+              <span class="card-title">🍽️ Food Recommendations</span>
+              <span class="card-subtitle" id="restaurants-subtitle"></span>
+            </div>
+            <div class="restaurants-grid" id="restaurants-grid"></div>
+          </div>
+
         </div><!-- /results-stack -->
       </section>
 
@@ -513,13 +547,30 @@
       <div class="footer-inner">
         <div class="footer-logo">🌿 TripSense</div>
         <span class="footer-sep">·</span>
-        <span>Powered by OpenWeather, Booking.com &amp; Mistral AI</span>
+        <span>Powered by OpenWeather, Booking.com, Google Maps &amp; Mistral AI</span>
       </div>
     </footer>
 
   </div><!-- /planner-page -->
 
   <script src="{{ url_for('static', filename='js/app.js') }}"></script>
+  <script src="{{ url_for('static', filename='js/app-extensions.js') }}"></script>
+  <script src="https://checkout.razorpay.com/v1/checkout.js"></script>
+
+  <!-- ══════════════════════════════════
+       BOOKING CONFIRMATION MODAL
+  ══════════════════════════════════ -->
+  <div id="booking-modal" class="auth-modal-backdrop hidden" role="dialog" aria-modal="true">
+    <div class="auth-modal booking-modal">
+      <div class="booking-modal-inner" id="booking-modal-body">
+        <div class="booking-success-icon">✅</div>
+        <h2 class="booking-modal-title">Booking Confirmed!</h2>
+        <p class="booking-modal-ref">Reference: <strong id="booking-ref">—</strong></p>
+        <div id="booking-modal-details" class="booking-modal-details"></div>
+        <button class="auth-submit" onclick="closeBookingModal()">Close</button>
+      </div>
+    </div>
+  </div>
 
   <!-- ══════════════════════════════════
        AUTH MODAL
@@ -602,9 +653,40 @@
           <button type="button" class="auth-switch-link" onclick="switchAuthTab('login')">Log in</button>
         </p>
       </form>
-
     </div>
   </div><!-- /auth-modal -->
+
+  <!-- ══════════════════════════════════
+       AI TRAVEL CHATBOT WIDGET
+  ══════════════════════════════════ -->
+  <div class="ts-chat-widget" id="ts-chat-widget">
+    <div class="ts-chat-window" id="ts-chat-window">
+      <div class="ts-chat-header">
+        <div class="ts-chat-header-info">
+          <div class="ts-chat-avatar">🤖</div>
+          <div class="ts-chat-title">
+            <h4>TripSense AI</h4>
+            <span>Online</span>
+          </div>
+        </div>
+        <button class="ts-chat-close" onclick="toggleChat()">&times;</button>
+      </div>
+      <div class="ts-chat-body" id="ts-chat-body">
+        <div class="ts-chat-msg bot">
+          Hi! I'm your TripSense AI assistant. Ask me anything about your travel plans, destinations, or bookings! ✈️
+        </div>
+      </div>
+      <div class="ts-chat-footer">
+        <input type="text" class="ts-chat-input" id="ts-chat-input" placeholder="Type a message..." autocomplete="off">
+        <button class="ts-chat-send" id="ts-chat-send" onclick="sendChatMessage()">
+          <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="22" y1="2" x2="11" y2="13"></line><polygon points="22 2 15 22 11 13 2 9 22 2"></polygon></svg>
+        </button>
+      </div>
+    </div>
+    <button class="ts-chat-btn" id="ts-chat-btn" onclick="toggleChat()">
+      <span>💬</span>
+    </button>
+  </div>
 
 </body>
 </html>

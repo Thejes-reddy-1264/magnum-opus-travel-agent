@@ -23,6 +23,10 @@ flask-sqlalchemy>=3.1.0
 # Input validation
 email-validator>=2.1.0
 
+# ── Payment ────────────────────────────────────────────────
+# Razorpay payment gateway
+razorpay>=1.4.0
+
 # ── Production deployment ──────────────────────────────────
 # Uncomment when deploying to a server:
 # gunicorn>=21.0.0
